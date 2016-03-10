@@ -75,12 +75,12 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
                     .build();
             gdh.setPlaceholderImage(expense.getIcon());
             binding.expenseIcon.setHierarchy(gdh);
-            statusSwitcher.setVisibility(View.GONE);
+            setStatusSwitcherState(expense.isExpanded(), 0);
         }
 
         @Override
         public void onClick(View v) {
-            toggleStatusSwitcher();
+            setStatusSwitcherState(!expense.isExpanded(), 300);
         }
 
         @Override
@@ -88,19 +88,19 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
             return itemView.findViewById(R.id.container);
         }
 
-        public void toggleStatusSwitcher() {
-            Toast.makeText(itemView.getContext(), "toggleStatusSwitcher", Toast.LENGTH_SHORT).show();
-
-            if(statusSwitcher.getVisibility() != View.VISIBLE) {
+        public void setStatusSwitcherState(boolean expanded, long duration) {
+            if(expanded) {
                 statusSwitcher.setVisibility(View.VISIBLE);
                 statusSwitcher.setAlpha(0);
-                statusSwitcher.animate().alpha(0.9f);
+                statusSwitcher.animate().alpha(0.9f).setDuration(duration).start();
+                expense.setExpanded(true);
             } else {
                 statusSwitcher.setAlpha(0.9f);
-                statusSwitcher.animate().alpha(0).withEndAction(new Runnable() {
+                statusSwitcher.animate().alpha(0).setDuration(duration).withEndAction(new Runnable() {
                     @Override
                     public void run() {
                         statusSwitcher.setVisibility(View.GONE);
+                        expense.setExpanded(false);
                     }
                 }).start();
             }
@@ -215,7 +215,10 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
 
     @Override
     public int onGetSwipeReactionType(ViewHolder holder, int position, int x, int y) {
-        return SwipeableItemConstants.REACTION_CAN_SWIPE_BOTH_H;
+        if(!expenses.get(position).isExpanded())
+            return SwipeableItemConstants.REACTION_CAN_SWIPE_BOTH_H;
+        else
+            return SwipeableItemConstants.REACTION_CAN_NOT_SWIPE_ANY;
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.aviraldg.littlefinger.api.models;
 import android.text.format.DateFormat;
 
 import com.aviraldg.littlefinger.R;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.Calendar;
 import java.util.HashMap;
@@ -27,6 +28,9 @@ public class Expense {
     private Calendar time;
     private String state;
     private String category;
+    /** UI and App Specific Properties **/
+    @JsonIgnore
+    private boolean isExpanded;
 
     public static int getColorForState(String state) {
         int res = R.color.unverified;
@@ -36,6 +40,14 @@ public class Expense {
         }
 
         return res;
+    }
+
+    public boolean isExpanded() {
+        return isExpanded;
+    }
+
+    public void setExpanded(boolean expanded) {
+        isExpanded = expanded;
     }
 
     public String getId() {
