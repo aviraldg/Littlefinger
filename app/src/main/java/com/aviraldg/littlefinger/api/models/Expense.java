@@ -1,25 +1,15 @@
 package com.aviraldg.littlefinger.api.models;
 
-import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.text.format.DateFormat;
 
 import com.aviraldg.littlefinger.R;
-import com.facebook.imagepipeline.request.ImageRequestBuilder;
 
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
 
+@SuppressWarnings("unused")
 public class Expense {
-    private String id;
-    private String description;
-    private float amount;
-    private Calendar time;
-    private String state;
-    private String category;
-
     private static final HashMap<String, Integer> expenseIcons = new HashMap<>();
     private static final HashMap<String, Integer> expenseColors = new HashMap<>();
 
@@ -31,10 +21,17 @@ public class Expense {
         expenseColors.put("fraud", R.color.fraud);
     }
 
+    private String id;
+    private String description;
+    private float amount;
+    private Calendar time;
+    private String state;
+    private String category;
+
     public static int getColorForState(String state) {
         int res = R.color.unverified;
 
-        if(expenseColors.containsKey(state)) {
+        if (expenseColors.containsKey(state)) {
             res = expenseColors.get(state);
         }
 
@@ -83,7 +80,7 @@ public class Expense {
     public int getIcon() {
         int res = R.drawable.ic_wallet;
 
-        if(expenseIcons.containsKey(getCategory())) {
+        if (expenseIcons.containsKey(getCategory())) {
             res = expenseIcons.get(getCategory());
         }
 

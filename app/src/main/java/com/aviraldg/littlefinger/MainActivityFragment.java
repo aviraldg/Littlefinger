@@ -1,11 +1,9 @@
 package com.aviraldg.littlefinger;
 
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.NinePatchDrawable;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,7 +19,7 @@ import com.h6ah4i.android.widget.advrecyclerview.animator.SwipeDismissItemAnimat
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.RecyclerViewSwipeManager;
 import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager;
 
-public class MainActivityFragment extends Fragment implements ExpensesAdapter.ExpenseClickListener {
+public class MainActivityFragment extends Fragment implements ExpensesAdapter.ExpenseListEventListener {
     private RecyclerView recyclerView;
     private ExpensesAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -88,5 +86,21 @@ public class MainActivityFragment extends Fragment implements ExpensesAdapter.Ex
     public void onExpenseClicked(Expense expense) {
         ExpenseFragment ef = new ExpenseFragment();
         ef.show(getFragmentManager(), "ExpenseFragment");
+    }
+
+    @Override
+    public void onExpenseListRefreshFailed() {
+        View v = getView();
+        if(v == null) return;
+
+        Snackbar.make(v, R.string.expenses_refresh_failed, Snackbar.LENGTH_INDEFINITE)
+                .setAction(R.string.retry, new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        adapter.refresh();
+                    }
+                })
+                .show();
+
     }
 }

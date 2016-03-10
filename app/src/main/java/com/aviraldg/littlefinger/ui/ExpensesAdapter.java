@@ -1,9 +1,7 @@
 package com.aviraldg.littlefinger.ui;
 
-import android.animation.ValueAnimator;
 import android.graphics.drawable.ColorDrawable;
-import android.support.design.widget.BottomSheetDialogFragment;
-import android.support.v4.app.Fragment;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -38,8 +36,9 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
 
     ArrayList<Expense> expenses = new ArrayList<>();
 
-    public interface ExpenseClickListener {
+    public interface ExpenseListEventListener {
         void onExpenseClicked(Expense expense);
+        void onExpenseListRefreshFailed();
     }
 
     class ViewHolder extends AbstractSwipeableItemViewHolder implements View.OnClickListener {
@@ -108,7 +107,7 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
 
     LittlefingerApi api = LittlefingerApplication.getApi();
 
-    ExpenseClickListener listener;
+    ExpenseListEventListener listener;
 
     SwipeRefreshLayout swipeRefreshLayout;
 
@@ -125,7 +124,7 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
         return expenses.get(position).getId().hashCode();
     }
 
-    public void setExpenseClickListener(ExpenseClickListener listener) {
+    public void setExpenseClickListener(ExpenseListEventListener listener) {
         this.listener = listener;
     }
 
@@ -142,6 +141,9 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
                     int end = expenses.size() - 1;
 
                     notifyItemRangeChanged(start, end);
+                } else {
+                    if(listener != null)
+                        listener.onExpenseListRefreshFailed();
                 }
 
                 swipeRefreshLayout.setRefreshing(false);
@@ -150,6 +152,8 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
             @Override
             public void onFailure(Call<ApiResponse> call, Throwable t) {
                 t.printStackTrace();
+                if(listener != null)
+                    listener.onExpenseListRefreshFailed();
                 swipeRefreshLayout.setRefreshing(false);
             }
         });
