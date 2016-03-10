@@ -25,6 +25,7 @@ import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultAct
 import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractSwipeableItemViewHolder;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,6 +39,7 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
 
     public interface ExpenseListEventListener {
         void onExpenseClicked(Expense expense);
+        void onExpenseListRefreshed(List<Expense> expenses);
         void onExpenseListRefreshFailed();
     }
 
@@ -141,6 +143,10 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
                     int end = expenses.size() - 1;
 
                     notifyItemRangeChanged(start, end);
+
+                    if(listener != null) {
+                        listener.onExpenseListRefreshed(response.body().getExpenses());
+                    }
                 } else {
                     if(listener != null)
                         listener.onExpenseListRefreshFailed();

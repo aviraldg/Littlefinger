@@ -4,6 +4,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,6 +20,8 @@ import com.h6ah4i.android.widget.advrecyclerview.animator.SwipeDismissItemAnimat
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.RecyclerViewSwipeManager;
 import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager;
 
+import java.util.List;
+
 public class MainActivityFragment extends Fragment implements ExpensesAdapter.ExpenseListEventListener {
     private RecyclerView recyclerView;
     private ExpensesAdapter adapter;
@@ -27,6 +30,7 @@ public class MainActivityFragment extends Fragment implements ExpensesAdapter.Ex
     private RecyclerViewSwipeManager recyclerViewSwipeManager;
     private LinearLayoutManager layoutManager;
     private RecyclerView.Adapter wrappedAdapter;
+    private ContentLoadingProgressBar expensesLoadingProgressBar;
 
     public MainActivityFragment() {}
 
@@ -73,13 +77,19 @@ public class MainActivityFragment extends Fragment implements ExpensesAdapter.Ex
         // priority: TouchActionGuard > Swipe > DragAndDrop
         recyclerViewTouchActionGuardManager.attachRecyclerView(recyclerView);
         recyclerViewSwipeManager.attachRecyclerView(recyclerView);
-
-        adapter.refresh();
     }
 
     void bindViews(View view) {
         recyclerView = (RecyclerView) view.findViewById(R.id.expense_recycler_view);
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout);
+        expensesLoadingProgressBar = (ContentLoadingProgressBar) view.findViewById(R.id.expenses_loading_progress_bar);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        adapter.refresh();
     }
 
     @Override
@@ -89,7 +99,14 @@ public class MainActivityFragment extends Fragment implements ExpensesAdapter.Ex
     }
 
     @Override
+    public void onExpenseListRefreshed(List<Expense> expenses) {
+        expensesLoadingProgressBar.hide();
+    }
+
+    @Override
     public void onExpenseListRefreshFailed() {
+        expensesLoadingProgressBar.hide();
+
         View v = getView();
         if(v == null) return;
 
