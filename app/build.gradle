@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.aviraldg.littlefinger"
-        minSdkVersion 14
+        minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -31,4 +31,7 @@ dependencies {
     compile 'com.facebook.fresco:fresco:0.9.0+'
     compile 'com.squareup.retrofit2:retrofit:2.0.0-beta4'
     compile 'com.squareup.retrofit2:converter-jackson:2.0.0-beta4'
+    compile ('com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:0.8.6@aar') {
+        transitive=true
+    }
 }

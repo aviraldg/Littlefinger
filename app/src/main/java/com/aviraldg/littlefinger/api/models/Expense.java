@@ -21,10 +21,24 @@ public class Expense {
     private String category;
 
     private static final HashMap<String, Integer> expenseIcons = new HashMap<>();
+    private static final HashMap<String, Integer> expenseColors = new HashMap<>();
 
     static {
         expenseIcons.put("Recharge", R.drawable.ic_phone);
         expenseIcons.put("Taxi", R.drawable.ic_car);
+
+        expenseColors.put("verified", R.color.verified);
+        expenseColors.put("fraud", R.color.fraud);
+    }
+
+    public static int getColorForState(String state) {
+        int res = R.color.unverified;
+
+        if(expenseColors.containsKey(state)) {
+            res = expenseColors.get(state);
+        }
+
+        return res;
     }
 
     public String getId() {
@@ -74,5 +88,9 @@ public class Expense {
         }
 
         return res;
+    }
+
+    public int getColor() {
+        return getColorForState(getState());
     }
 }
