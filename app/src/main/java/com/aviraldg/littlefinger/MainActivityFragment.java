@@ -31,6 +31,7 @@ public class MainActivityFragment extends Fragment implements ExpensesAdapter.Ex
     private LinearLayoutManager layoutManager;
     private RecyclerView.Adapter wrappedAdapter;
     private ContentLoadingProgressBar expensesLoadingProgressBar;
+    private Snackbar snackbar;
 
     public MainActivityFragment() {}
 
@@ -101,6 +102,10 @@ public class MainActivityFragment extends Fragment implements ExpensesAdapter.Ex
     @Override
     public void onExpenseListRefreshed(List<Expense> expenses) {
         expensesLoadingProgressBar.hide();
+
+        if(snackbar != null) {
+            snackbar.dismiss();
+        }
     }
 
     @Override
@@ -110,14 +115,13 @@ public class MainActivityFragment extends Fragment implements ExpensesAdapter.Ex
         View v = getView();
         if(v == null) return;
 
-        Snackbar.make(v, R.string.expenses_refresh_failed, Snackbar.LENGTH_INDEFINITE)
+        snackbar = Snackbar.make(v, R.string.expenses_refresh_failed, Snackbar.LENGTH_INDEFINITE)
                 .setAction(R.string.retry, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         adapter.refresh();
                     }
-                })
-                .show();
-
+                });
+        snackbar.show();
     }
 }
