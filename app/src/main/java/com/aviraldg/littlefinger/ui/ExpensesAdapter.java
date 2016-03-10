@@ -1,18 +1,16 @@
 package com.aviraldg.littlefinger.ui;
 
 import android.graphics.drawable.ColorDrawable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.aviraldg.littlefinger.LittlefingerApplication;
 import com.aviraldg.littlefinger.R;
 import com.aviraldg.littlefinger.api.LittlefingerApi;
-import com.aviraldg.littlefinger.api.models.ApiResponse;
+import com.aviraldg.littlefinger.api.models.ApiData;
 import com.aviraldg.littlefinger.api.models.Expense;
 import com.aviraldg.littlefinger.databinding.ExpenseItemBinding;
 import com.facebook.drawee.generic.GenericDraweeHierarchy;
@@ -36,84 +34,9 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
         SwipeableItemAdapter<ExpensesAdapter.ViewHolder> {
 
     ArrayList<Expense> expenses = new ArrayList<>();
-
-    public interface ExpenseListEventListener {
-        void onExpenseClicked(Expense expense);
-        void onExpenseListRefreshed(List<Expense> expenses);
-        void onExpenseListRefreshFailed();
-    }
-
-    class ViewHolder extends AbstractSwipeableItemViewHolder implements View.OnClickListener {
-        ExpenseItemBinding binding;
-        Expense expense;
-        View statusSwitcher;
-
-        public ViewHolder(ExpenseItemBinding binding) {
-            super(binding.getRoot());
-            this.binding = binding;
-            itemView.findViewById(R.id.container).setOnClickListener(this);
-            bindViews(itemView);
-
-        }
-
-        private void bindViews(View v) {
-            statusSwitcher = v.findViewById(R.id.status_switcher);
-            v.findViewById(R.id.mark_fraud).setOnClickListener(this);
-            v.findViewById(R.id.mark_unverified).setOnClickListener(this);
-            v.findViewById(R.id.mark_verified).setOnClickListener(this);
-        }
-
-        public void setExpense(Expense expense) {
-            this.expense = expense;
-            binding.setExpense(expense);
-            ColorDrawable cd = new ColorDrawable();
-            cd.setColor(itemView.getResources().getColor(expense.getColor()));
-            RoundingParams rp = binding.expenseIcon.getHierarchy().getRoundingParams();
-            GenericDraweeHierarchy gdh = new GenericDraweeHierarchyBuilder(itemView.getResources())
-                    .setBackground(cd)
-                    .setRoundingParams(rp)
-                    .build();
-            gdh.setPlaceholderImage(expense.getIcon());
-            binding.expenseIcon.setHierarchy(gdh);
-            setStatusSwitcherState(expense.isExpanded(), 0);
-        }
-
-        @Override
-        public void onClick(View v) {
-            setStatusSwitcherState(!expense.isExpanded(), 300);
-        }
-
-        @Override
-        public View getSwipeableContainerView() {
-            return itemView.findViewById(R.id.container);
-        }
-
-        public void setStatusSwitcherState(boolean expanded, long duration) {
-            if(expanded) {
-                statusSwitcher.setVisibility(View.VISIBLE);
-                statusSwitcher.setAlpha(0);
-                statusSwitcher.animate().alpha(0.9f).setDuration(duration).start();
-                expense.setExpanded(true);
-            } else {
-                statusSwitcher.setAlpha(0.9f);
-                statusSwitcher.animate().alpha(0).setDuration(duration).withEndAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        statusSwitcher.setVisibility(View.GONE);
-                        expense.setExpanded(false);
-                    }
-                }).start();
-            }
-        }
-    }
-
     LittlefingerApi api = LittlefingerApplication.getApi();
-
     ExpenseListEventListener listener;
-
     SwipeRefreshLayout swipeRefreshLayout;
-
-
 
     public ExpensesAdapter(SwipeRefreshLayout swipeRefreshLayout) {
         this.swipeRefreshLayout = swipeRefreshLayout;
@@ -133,9 +56,9 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
     public void refresh() {
         swipeRefreshLayout.setRefreshing(true);
 
-        api.queryExpenses().enqueue(new Callback<ApiResponse>() {
+        api.queryExpenses().enqueue(new Callback<ApiData>() {
             @Override
-            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+            public void onResponse(Call<ApiData> call, Response<ApiData> response) {
                 if(response.isSuccess()) {
                     expenses.clear();
                     int start = expenses.size();
@@ -156,7 +79,7 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
             }
 
             @Override
-            public void onFailure(Call<ApiResponse> call, Throwable t) {
+            public void onFailure(Call<ApiData> call, Throwable t) {
                 t.printStackTrace();
                 if(listener != null)
                     listener.onExpenseListRefreshFailed();
@@ -164,7 +87,6 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
             }
         });
     }
-
 
     @Override
     public void onRefresh() {
@@ -189,7 +111,6 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
     public int getItemCount() {
         return expenses.size();
     }
-
 
     @Override
     public SwipeResultAction onSwipeItem(ViewHolder holder, int position, int result) {
@@ -243,6 +164,94 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
         }
 
         holder.itemView.setBackgroundResource(state);
+    }
+
+    public interface ExpenseListEventListener {
+        void onExpenseChanged(Expense expense, ApiData data);
+        void onExpenseListRefreshed(List<Expense> expenses);
+        void onExpenseListRefreshFailed();
+    }
+
+    class ViewHolder extends AbstractSwipeableItemViewHolder implements View.OnClickListener {
+        ExpenseItemBinding binding;
+        Expense expense;
+        View statusSwitcher;
+
+        public ViewHolder(ExpenseItemBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
+            itemView.findViewById(R.id.container).setOnClickListener(this);
+            bindViews(itemView);
+
+        }
+
+        private void bindViews(View v) {
+            statusSwitcher = v.findViewById(R.id.status_switcher);
+
+            View.OnClickListener onMarkStatus = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Button tags contain corresponding state
+                    String state = (String) v.getTag();
+                    expense.setState(state);
+                    expense.setExpanded(false);
+                    notifyItemChanged(expenses.indexOf(expense));
+
+                    if(listener != null) {
+                        ApiData apiData = new ApiData();
+                        apiData.setExpenses(expenses);
+                        listener.onExpenseChanged(expense, apiData);
+                    }
+                }
+            };
+
+            v.findViewById(R.id.mark_fraud).setOnClickListener(onMarkStatus);
+            v.findViewById(R.id.mark_unverified).setOnClickListener(onMarkStatus);
+            v.findViewById(R.id.mark_verified).setOnClickListener(onMarkStatus);
+        }
+
+        public void setExpense(Expense expense) {
+            this.expense = expense;
+            binding.setExpense(expense);
+            ColorDrawable cd = new ColorDrawable();
+            cd.setColor(itemView.getResources().getColor(expense.getColor()));
+            RoundingParams rp = binding.expenseIcon.getHierarchy().getRoundingParams();
+            GenericDraweeHierarchy gdh = new GenericDraweeHierarchyBuilder(itemView.getResources())
+                    .setBackground(cd)
+                    .setRoundingParams(rp)
+                    .build();
+            gdh.setPlaceholderImage(expense.getIcon());
+            binding.expenseIcon.setHierarchy(gdh);
+            setStatusSwitcherState(expense.isExpanded(), 0);
+        }
+
+        @Override
+        public void onClick(View v) {
+            setStatusSwitcherState(!expense.isExpanded(), 300);
+        }
+
+        @Override
+        public View getSwipeableContainerView() {
+            return itemView.findViewById(R.id.container);
+        }
+
+        public void setStatusSwitcherState(boolean expanded, long duration) {
+            if(expanded) {
+                statusSwitcher.setVisibility(View.VISIBLE);
+                statusSwitcher.setAlpha(0);
+                statusSwitcher.animate().alpha(0.9f).setDuration(duration).start();
+                expense.setExpanded(true);
+            } else {
+                statusSwitcher.setAlpha(0.9f);
+                statusSwitcher.animate().alpha(0).setDuration(duration).withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        statusSwitcher.setVisibility(View.GONE);
+                        expense.setExpanded(false);
+                    }
+                }).start();
+            }
+        }
     }
 
     class SwipeVerify extends SwipeResultActionMoveToSwipedDirection {

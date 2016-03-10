@@ -140,7 +140,8 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:clickable="true"
-                android:foreground="?attr/selectableItemBackground" />
+                android:foreground="?attr/selectableItemBackground"
+                android:tag="fraud" />
             <ImageButton
                 android:id="@+id/mark_unverified"
                 android:background="@color/unverified"
@@ -149,7 +150,8 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:clickable="true"
-                android:foreground="?attr/selectableItemBackground" />
+                android:foreground="?attr/selectableItemBackground"
+                android:tag="unverified" />
             <ImageButton
                 android:id="@+id/mark_verified"
                 android:background="@color/verified"
@@ -158,7 +160,8 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:clickable="true"
-                android:foreground="?attr/selectableItemBackground" />
+                android:foreground="?attr/selectableItemBackground"
+                android:tag="verified" />
         </LinearLayout>
 
     </RelativeLayout>

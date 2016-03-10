@@ -31,6 +31,8 @@ public class Expense {
     /** UI and App Specific Properties **/
     @JsonIgnore
     private boolean isExpanded;
+    @JsonIgnore
+    private String oldState; // Used to restore old state in case network update request fails.
 
     public static int getColorForState(String state) {
         int res = R.color.unverified;
@@ -40,6 +42,10 @@ public class Expense {
         }
 
         return res;
+    }
+
+    public String getOldState() {
+        return oldState;
     }
 
     public boolean isExpanded() {
@@ -62,6 +68,7 @@ public class Expense {
         return amount;
     }
 
+    @JsonIgnore
     public String getFormattedAmount() {
         return String.format(Locale.getDefault(), "₹%.02f", amount);
     }
@@ -70,6 +77,7 @@ public class Expense {
         return time;
     }
 
+    @JsonIgnore
     public String getFormattedTime() {
         return DateFormat.format("h:mm a on d/L/yy", time).toString();
     }
@@ -78,10 +86,16 @@ public class Expense {
         return state;
     }
 
+    public void setState(String state) {
+        this.oldState = this.state;
+        this.state = state;
+    }
+
     public String getCategory() {
         return category;
     }
 
+    @JsonIgnore
     public String getMeta() {
         return String.format(Locale.getDefault(),
                 "#%s #%s",
@@ -89,6 +103,7 @@ public class Expense {
                 getState().toLowerCase());
     }
 
+    @JsonIgnore
     public int getIcon() {
         int res = R.drawable.ic_wallet;
 
@@ -99,6 +114,7 @@ public class Expense {
         return res;
     }
 
+    @JsonIgnore
     public int getColor() {
         return getColorForState(getState());
     }

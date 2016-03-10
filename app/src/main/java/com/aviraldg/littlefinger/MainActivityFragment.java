@@ -12,8 +12,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.aviraldg.littlefinger.api.LittlefingerApi;
+import com.aviraldg.littlefinger.api.models.ApiData;
 import com.aviraldg.littlefinger.api.models.Expense;
-import com.aviraldg.littlefinger.ui.ExpenseFragment;
 import com.aviraldg.littlefinger.ui.ExpensesAdapter;
 import com.h6ah4i.android.widget.advrecyclerview.animator.GeneralItemAnimator;
 import com.h6ah4i.android.widget.advrecyclerview.animator.SwipeDismissItemAnimator;
@@ -22,7 +23,12 @@ import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchAct
 
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MainActivityFragment extends Fragment implements ExpensesAdapter.ExpenseListEventListener {
+    private static LittlefingerApi api = LittlefingerApplication.getApi();
     private RecyclerView recyclerView;
     private ExpensesAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -94,9 +100,53 @@ public class MainActivityFragment extends Fragment implements ExpensesAdapter.Ex
     }
 
     @Override
-    public void onExpenseClicked(Expense expense) {
-        ExpenseFragment ef = new ExpenseFragment();
-        ef.show(getFragmentManager(), "ExpenseFragment");
+    public void onExpenseChanged(final Expense expense, final ApiData data) {
+        api.updateExpenses(data)
+                .enqueue(new Callback<ApiData>() {
+                    @Override
+                    public void onResponse(Call<ApiData> call, Response<ApiData> response) {
+                        if(response.isSuccess()) {
+                            View v = getView();
+                            if(v != null) {
+                                Snackbar.make(v, "Expenses updated successfully", Snackbar.LENGTH_SHORT)
+                                        .show();
+                            }
+                        } else {
+                            handleFailure();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiData> call, Throwable t) {
+                        handleFailure();
+                    }
+
+                    private void handleFailure() {
+                        View v = getView();
+                        if(v != null) {
+                            String oldState = expense.getOldState();
+                            final String state = expense.getState();
+
+                            // Revert change
+                            expense.setState(oldState);
+                            adapter.notifyDataSetChanged(); // TODO notify only for changed item
+
+                            Snackbar.make(v, "Failed to update expenses", Snackbar.LENGTH_INDEFINITE)
+                                    .setAction("Retry", new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+
+                                            expense.setState(state);
+                                            adapter.notifyDataSetChanged(); // TODO notify only for changed item
+
+                                            onExpenseChanged(expense, data);
+                                        }
+                                    }).show();
+                        }
+
+
+                    }
+                });
     }
 
     @Override
