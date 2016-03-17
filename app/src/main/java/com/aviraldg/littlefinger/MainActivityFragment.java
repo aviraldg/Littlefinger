@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import com.aviraldg.littlefinger.api.LittlefingerApi;
 import com.aviraldg.littlefinger.api.models.ApiData;
 import com.aviraldg.littlefinger.api.models.Expense;
-import com.aviraldg.littlefinger.ui.ExpensesAdapter;
 import com.h6ah4i.android.widget.advrecyclerview.animator.GeneralItemAnimator;
 import com.h6ah4i.android.widget.advrecyclerview.animator.SwipeDismissItemAnimator;
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.RecyclerViewSwipeManager;

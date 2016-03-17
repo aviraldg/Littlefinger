@@ -26,10 +26,10 @@ public class Expense {
     private Calendar time;
     private String state;
     private String category;
-    /** UI and App Specific Properties **/
-    @JsonIgnore
+    /**
+     * UI and App Specific Properties
+     **/
     private boolean isExpanded;
-    @JsonIgnore
     private String oldState; // Used to restore old state in case network update request fails.
 
     public static int getColorForState(String state) {
@@ -46,6 +46,7 @@ public class Expense {
         return oldState;
     }
 
+    @JsonIgnore
     public boolean isExpanded() {
         return isExpanded;
     }

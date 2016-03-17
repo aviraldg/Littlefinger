@@ -1,4 +1,4 @@
-package com.aviraldg.littlefinger.ui;
+package com.aviraldg.littlefinger;
 
 import android.graphics.drawable.ColorDrawable;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -7,8 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.aviraldg.littlefinger.LittlefingerApplication;
-import com.aviraldg.littlefinger.R;
 import com.aviraldg.littlefinger.api.LittlefingerApi;
 import com.aviraldg.littlefinger.api.models.ApiData;
 import com.aviraldg.littlefinger.api.models.Expense;
@@ -22,11 +20,9 @@ import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemAdapter;
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemConstants;
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultAction;
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultActionDefault;
-import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultActionMoveToSwipedDirection;
 import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractSwipeableItemViewHolder;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import retrofit2.Call;
@@ -63,7 +59,7 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
         api.queryExpenses().enqueue(new Callback<ApiData>() {
             @Override
             public void onResponse(Call<ApiData> call, Response<ApiData> response) {
-                if(response.isSuccess()) {
+                if (response.isSuccess()) {
                     expenses.clear();
                     int start = expenses.size();
                     expenses.addAll(response.body().getExpenses());
@@ -71,11 +67,11 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
 
                     notifyItemRangeChanged(start, end);
 
-                    if(listener != null) {
+                    if (listener != null) {
                         listener.onExpenseListRefreshed(response.body().getExpenses());
                     }
                 } else {
-                    if(listener != null)
+                    if (listener != null)
                         listener.onExpenseListRefreshFailed();
                 }
 
@@ -85,7 +81,7 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
             @Override
             public void onFailure(Call<ApiData> call, Throwable t) {
                 t.printStackTrace();
-                if(listener != null)
+                if (listener != null)
                     listener.onExpenseListRefreshFailed();
                 swipeRefreshLayout.setRefreshing(false);
             }
@@ -129,7 +125,7 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
                 break;
 
             case SwipeableItemConstants.RESULT_SWIPED_RIGHT:
-                action = new SwipeMarkState(position, State.forId((state.getId() + count+ 1) % count));
+                action = new SwipeMarkState(position, State.forId((state.getId() + count + 1) % count));
                 break;
 
             case SwipeableItemConstants.RESULT_CANCELED:
@@ -143,7 +139,7 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
 
     @Override
     public int onGetSwipeReactionType(ViewHolder holder, int position, int x, int y) {
-        if(!expenses.get(position).isExpanded())
+        if (!expenses.get(position).isExpanded())
             return SwipeableItemConstants.REACTION_CAN_SWIPE_BOTH_H;
         else
             return SwipeableItemConstants.REACTION_CAN_NOT_SWIPE_ANY;
@@ -156,7 +152,7 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
 
         int count = State.getStateCount();
 
-        switch(type) {
+        switch (type) {
             case SwipeableItemConstants.DRAWABLE_SWIPE_LEFT_BACKGROUND: {
                 int id = (state.getId() + count - 1) % count;
                 newState = State.forId(id);
@@ -182,7 +178,9 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
 
     public interface ExpenseListEventListener {
         void onExpenseChanged(Expense expense, ApiData data);
+
         void onExpenseListRefreshed(List<Expense> expenses);
+
         void onExpenseListRefreshFailed();
     }
 
@@ -213,7 +211,7 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
                     expense.setExpanded(false);
                     notifyItemChanged(expenses.indexOf(expense));
 
-                    if(listener != null) {
+                    if (listener != null) {
                         ApiData apiData = new ApiData();
                         apiData.setExpenses(expenses);
                         listener.onExpenseChanged(expense, apiData);
@@ -256,7 +254,7 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
         }
 
         public void setStatusSwitcherState(boolean expanded, long duration) {
-            if(expanded) {
+            if (expanded) {
                 statusSwitcher.setVisibility(View.VISIBLE);
                 statusSwitcher.setAlpha(0);
                 statusSwitcher.animate().alpha(0.9f).setDuration(duration).start();
@@ -281,7 +279,7 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
             expense.setExpanded(false);
             notifyItemChanged(expenses.indexOf(expense));
 
-            if(listener != null) {
+            if (listener != null) {
                 ApiData apiData = new ApiData();
                 apiData.setExpenses(expenses);
                 listener.onExpenseChanged(expense, apiData);

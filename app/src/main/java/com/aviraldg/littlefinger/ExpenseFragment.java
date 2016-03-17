@@ -1,4 +1,4 @@
-package com.aviraldg.littlefinger.ui;
+package com.aviraldg.littlefinger;
 
 import android.app.Dialog;
 import android.os.Bundle;
