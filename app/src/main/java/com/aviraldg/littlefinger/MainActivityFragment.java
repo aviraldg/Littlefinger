@@ -1,5 +1,6 @@
 package com.aviraldg.littlefinger;
 
+import android.app.Activity;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -103,7 +104,9 @@ public class MainActivityFragment extends Fragment implements ExpensesAdapter.Ex
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                getActivity().runOnUiThread(new Runnable() {
+                Activity activity = getActivity();
+                if(activity == null) return;
+                activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         adapter.refresh();
