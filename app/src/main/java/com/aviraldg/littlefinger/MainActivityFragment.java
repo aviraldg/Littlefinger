@@ -21,12 +21,15 @@ import com.h6ah4i.android.widget.advrecyclerview.swipeable.RecyclerViewSwipeMana
 import com.h6ah4i.android.widget.advrecyclerview.touchguard.RecyclerViewTouchActionGuardManager;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivityFragment extends Fragment implements ExpensesAdapter.ExpenseListEventListener {
+    private static final long REFRESH_DELAY = 10*1000;
     private static LittlefingerApi api = LittlefingerApplication.getApi();
     private RecyclerView recyclerView;
     private ExpensesAdapter adapter;
@@ -37,6 +40,7 @@ public class MainActivityFragment extends Fragment implements ExpensesAdapter.Ex
     private RecyclerView.Adapter wrappedAdapter;
     private ContentLoadingProgressBar expensesLoadingProgressBar;
     private Snackbar snackbar;
+    private Timer timer = new Timer();
 
     public MainActivityFragment() {}
 
@@ -96,6 +100,24 @@ public class MainActivityFragment extends Fragment implements ExpensesAdapter.Ex
         super.onStart();
 
         adapter.refresh();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.refresh();
+                    }
+                });
+            }
+        }, 0, REFRESH_DELAY);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        timer.purge();
     }
 
     @Override
