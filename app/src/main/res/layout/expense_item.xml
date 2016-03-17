@@ -12,6 +12,7 @@
         android:layout_height="wrap_content">
 
         <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/left_icon"
             android:layout_marginLeft="@dimen/fab_margin"
             android:layout_marginStart="@dimen/fab_margin"
             android:layout_centerVertical="true"
@@ -25,6 +26,7 @@
             android:layout_height="48dp" />
 
         <com.facebook.drawee.view.SimpleDraweeView
+            android:id="@+id/right_icon"
             android:layout_marginRight="@dimen/fab_margin"
             android:layout_marginEnd="@dimen/fab_margin"
             android:layout_centerVertical="true"

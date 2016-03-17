@@ -18,8 +18,6 @@ public class Expense {
         expenseIcons.put("Recharge", R.drawable.ic_phone);
         expenseIcons.put("Taxi", R.drawable.ic_car);
 
-        expenseColors.put("verified", R.color.verified);
-        expenseColors.put("fraud", R.color.fraud);
     }
 
     private String id;
@@ -112,10 +110,5 @@ public class Expense {
         }
 
         return res;
-    }
-
-    @JsonIgnore
-    public int getColor() {
-        return getColorForState(getState());
     }
 }

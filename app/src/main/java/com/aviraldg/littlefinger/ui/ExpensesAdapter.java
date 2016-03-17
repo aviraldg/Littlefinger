@@ -12,17 +12,21 @@ import com.aviraldg.littlefinger.R;
 import com.aviraldg.littlefinger.api.LittlefingerApi;
 import com.aviraldg.littlefinger.api.models.ApiData;
 import com.aviraldg.littlefinger.api.models.Expense;
+import com.aviraldg.littlefinger.api.models.State;
 import com.aviraldg.littlefinger.databinding.ExpenseItemBinding;
 import com.facebook.drawee.generic.GenericDraweeHierarchy;
 import com.facebook.drawee.generic.GenericDraweeHierarchyBuilder;
 import com.facebook.drawee.generic.RoundingParams;
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemAdapter;
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.SwipeableItemConstants;
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultAction;
+import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultActionDefault;
 import com.h6ah4i.android.widget.advrecyclerview.swipeable.action.SwipeResultActionMoveToSwipedDirection;
 import com.h6ah4i.android.widget.advrecyclerview.utils.AbstractSwipeableItemViewHolder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import retrofit2.Call;
@@ -116,13 +120,16 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
     public SwipeResultAction onSwipeItem(ViewHolder holder, int position, int result) {
         SwipeResultAction action;
 
+        State state = State.forName(holder.expense.getState());
+        int count = State.getStateCount();
+
         switch (result) {
             case SwipeableItemConstants.RESULT_SWIPED_LEFT:
-                action = new SwipeVerify();
+                action = new SwipeMarkState(position, State.forId((state.getId() + count - 1) % count));
                 break;
 
             case SwipeableItemConstants.RESULT_SWIPED_RIGHT:
-                action = new SwipeFraud();
+                action = new SwipeMarkState(position, State.forId((state.getId() + count+ 1) % count));
                 break;
 
             case SwipeableItemConstants.RESULT_CANCELED:
@@ -144,26 +151,33 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
 
     @Override
     public void onSetSwipeBackground(ViewHolder holder, int position, int type) {
-        String [] states = {"fraud", "unverified", "verified"};
 
-        int state;
+        State state = State.forName(holder.expense.getState()), newState;
+
+        int count = State.getStateCount();
 
         switch(type) {
-            case SwipeableItemConstants.DRAWABLE_SWIPE_LEFT_BACKGROUND:
-                state = Expense.getColorForState(states[2]);
+            case SwipeableItemConstants.DRAWABLE_SWIPE_LEFT_BACKGROUND: {
+                int id = (state.getId() + count - 1) % count;
+                newState = State.forId(id);
+                holder.rightIcon.getHierarchy().setPlaceholderImage(newState.getDrawableResource());
                 break;
+            }
 
-            case SwipeableItemConstants.DRAWABLE_SWIPE_RIGHT_BACKGROUND:
-                state = Expense.getColorForState(states[0]);
+            case SwipeableItemConstants.DRAWABLE_SWIPE_RIGHT_BACKGROUND: {
+                int id = (state.getId() + count + 1) % count;
+                newState = State.forId(id);
+                holder.leftIcon.getHierarchy().setPlaceholderImage(newState.getDrawableResource());
                 break;
+            }
 
             case SwipeableItemConstants.DRAWABLE_SWIPE_NEUTRAL_BACKGROUND:
             default:
-                state = android.R.color.white;
+                newState = State.forName(State.UNVERIFIED);
                 break;
         }
 
-        holder.itemView.setBackgroundResource(state);
+        holder.itemView.setBackgroundResource(newState.getColorResource());
     }
 
     public interface ExpenseListEventListener {
@@ -176,6 +190,8 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
         ExpenseItemBinding binding;
         Expense expense;
         View statusSwitcher;
+        SimpleDraweeView leftIcon;
+        SimpleDraweeView rightIcon;
 
         public ViewHolder(ExpenseItemBinding binding) {
             super(binding.getRoot());
@@ -208,13 +224,17 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
             v.findViewById(R.id.mark_fraud).setOnClickListener(onMarkStatus);
             v.findViewById(R.id.mark_unverified).setOnClickListener(onMarkStatus);
             v.findViewById(R.id.mark_verified).setOnClickListener(onMarkStatus);
+
+            leftIcon = (SimpleDraweeView) v.findViewById(R.id.left_icon);
+            rightIcon = (SimpleDraweeView) v.findViewById(R.id.right_icon);
         }
 
         public void setExpense(Expense expense) {
             this.expense = expense;
             binding.setExpense(expense);
             ColorDrawable cd = new ColorDrawable();
-            cd.setColor(itemView.getResources().getColor(expense.getColor()));
+            int color = State.forName(expense.getState()).getColorResource();
+            cd.setColor(itemView.getResources().getColor(color));
             RoundingParams rp = binding.expenseIcon.getHierarchy().getRoundingParams();
             GenericDraweeHierarchy gdh = new GenericDraweeHierarchyBuilder(itemView.getResources())
                     .setBackground(cd)
@@ -254,9 +274,23 @@ public class ExpensesAdapter extends RecyclerView.Adapter<ExpensesAdapter.ViewHo
         }
     }
 
-    class SwipeVerify extends SwipeResultActionMoveToSwipedDirection {
-    }
+    class SwipeMarkState extends SwipeResultActionDefault {
+        public SwipeMarkState(int position, State state) {
+            Expense expense = expenses.get(position);
+            expense.setState(state.getName());
+            expense.setExpanded(false);
+            notifyItemChanged(expenses.indexOf(expense));
 
-    class SwipeFraud extends SwipeResultActionMoveToSwipedDirection {
+            if(listener != null) {
+                ApiData apiData = new ApiData();
+                apiData.setExpenses(expenses);
+                listener.onExpenseChanged(expense, apiData);
+            }
+        }
+
+        @Override
+        protected void onPerformAction() {
+            super.onPerformAction();
+        }
     }
 }
